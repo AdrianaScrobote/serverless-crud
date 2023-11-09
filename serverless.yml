@@ -1,0 +1,79 @@
+service: serverless-crud
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    tableName: ${self:custom.tableName}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:*
+          Resource: "*"
+
+package:
+  individually: true
+
+custom:
+  tableName: points-player
+
+functions:
+  helloWorld:
+    handler: handler.helloWorld
+
+    events:
+      - http:
+          path: hello-world
+          method: get
+          cors: true
+
+  getPlayerScore:
+    handler: lambdas/endpoints/getPlayerScore.handler
+    events:
+      - http:
+          path: get-player-score/{ID}
+          method: GET
+          cors: true
+
+  createPlayerScore:
+    handler: lambdas/endpoints/createPlayerScore.handler
+    events:
+      - http:
+          path: create-player-score/{ID}
+          method: POST
+          cors: true
+
+  updatePlayerScore:
+    handler: lambdas/endpoints/updatePlayerScore.handler
+    events:
+      - http:
+          path: update-player-score/{ID}
+          method: PUT
+          cors: true
+
+  deletePlayerScore:
+    handler: lambdas/endpoints/deletePlayerScore.handler
+    events:
+      - http:
+          path: delete-player-score/{ID}
+          method: DELETE
+          cors: true
+
+resources:
+  Resources:
+    MyDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: ID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ID
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
